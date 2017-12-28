@@ -1,0 +1,176 @@
+@CHARSET "UTF-8";
+
+
+
+/* ******************** */
+/* Div per attivare la barra laterale */
+/* ******************** */
+#sidebar_enabler {
+	height: 100%;
+	width: 5px;
+	
+	z-index: 6;
+	
+	position: absolute;
+	left: 0px;
+	opacity:0;
+	transition: .4s;
+}
+#sidebar_enabler.disabled {
+}
+
+#sidebar_enabler:hover {
+}
+
+
+
+
+
+
+
+
+/* ***** ***** ***** */
+/* Barra laterale sinistra */
+/* ***** ***** ***** */
+#left_sidebar {
+	background-color: var(--sidebar-bg-color);
+	position: fixed;
+	left: -24.5%;
+	width: calc(23% - 10px);
+	
+	float: left;
+	height: 100%;
+	
+	transition: 0.2s;
+	-webkit-transition-timing-function: cubic-bezier(0.77, 0, 0.175, 1);
+	transition-timing-function: cubic-bezier(0.77, 0, 0.175, 1);
+	
+	box-shadow: 10px 0px 15px 0px rgba(0,0,0,0.75);
+}
+#left_sidebar.active {
+	left:0;
+}
+#left_sidebar.initial {
+	left: -100%;
+}
+
+
+
+.accordionButton {
+	background-color: var(--sidebar-bg-color);
+	display: flex;
+	align-items: center;
+	color: white;
+	padding-left: 5%;
+	width:95%;
+	vertical-align: middle;
+	text-align: left;
+	border: none;
+	outline: none;
+	transition: 0.5s;
+	cursor: pointer;
+	min-height: 10%;
+	overflow: hidden;
+	
+	-webkit-user-select: none; /* Chrome/Safari */        
+	-moz-user-select: none; /* Firefox */
+	-ms-user-select: none; /* IE10+ */
+	
+	/* Rules below not implemented in browsers yet */
+	-o-user-select: none;
+	user-select: none;
+}
+
+.accordionButton h5{
+	-webkit-user-select: none; /* Chrome/Safari */        
+	-moz-user-select: none; /* Firefox */
+	-ms-user-select: none; /* IE10+ */
+	
+	/* Rules below not implemented in browsers yet */
+	-o-user-select: none;
+	user-select: none;
+}
+
+
+
+.accordionButton.active, .accordionButton:hover {
+	background-color: var(--accordion-button-selected-bg-color);
+}
+
+
+
+
+.accordionButton img {
+	float: left;
+	display: inline;
+	transition: 0.5s;
+	margin-right: 10%;
+}
+
+
+
+.accordionButton h5 {
+}
+
+
+
+img.rotate {
+	transform: rotate(-180deg);
+}
+
+
+
+.accordionPanel {
+	background-color: var(--main-bg-color);
+	padding-left: 10%;
+	max-height: 0;
+	overflow: hidden;
+	opacity: 1;
+	transition: 0.6s;
+	-webkit-transition-timing-function: cubic-bezier(0.77, 0, 0.175, 1);
+	transition-timing-function: cubic-bezier(0.77, 0, 0.175, 1);
+	border-left: 10px solid var(--header-bg-color);
+}
+
+
+
+.accordionPanel.show {
+	max-height: 100%;
+}
+
+
+
+.accordionPanelItem {
+	padding-bottom: 3%;
+	padding-top: 3%;
+	width: 150%;
+}
+
+
+
+.accordionPanelItem {
+	list-style-type: none;
+}
+
+
+
+.accordionPanelItem-Wall {
+	cursor: pointer;
+	margin-left: -5%;
+	margin-right: 10%;
+}
+
+.wallSizeIncDecButtons {
+	display: inline;
+	vertical-align: middle;
+	cursor: pointer;
+}
+.wallSizeIncDecButtons:hover {
+	background-color: var(--dropdown-button-selected);
+}
+
+
+
+.accordionPanelItem-Forn {
+	cursor: grab;
+}

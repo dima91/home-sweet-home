@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+
+<!--	TODO
+ - Fai un refactoring (LAVORONE)
+ - Abilita la selezione multipla (LAVORONE)
+ - Estendi il muro che ha un vertice coincidente con un altro muro (LAVORONISSIMO)
+ - Cambia le unità di misura in "vh" e "vw"
+ - Fai la scrollbar per la sidebar
+
+ - Aggiungi le opzioni per i markers
+
+ 		BUG
+ -->
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+	<title>Home Sweet Home</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"></meta>
+	<link href="http://www.freeiconspng.com/uploads/home-icon-4.png" rel="icon"></link>
+	<link href="./resources/css/wrapper.css" rel="stylesheet" type="text/css"></link>
+	<link href="./resources/css/header.css" rel="stylesheet" type="text/css"></link>
+	<link href="./resources/css/client_wrapper.css" rel="stylesheet" type="text/css"></link>
+	<link href="./resources/css/left_sidebar.css" rel="stylesheet" type="text/css"></link>
+	<link href="./resources/css/main_content.css" rel="stylesheet" type="text/css"></link>
+	<link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet"></link>
+	<script src="./resources/scripts/utils.js" type="text/javascript"></script>
+	<script src="./resources/scripts/wall.js" type="text/javascript"></script>
+	<script src="./resources/scripts/forniture.js" type="text/javascript"></script>
+	<script src="./resources/scripts/components.js" type="text/javascript"></script>
+	<script src="./resources/scripts/graphic.js" type="text/javascript"></script>
+	<script src="./resources/scripts/callbacks.js" type="text/javascript"></script>
+</head>
+
+<!-- La pagina sarà composta da un header in cui ci sarà il menù delle cose che si possono fare (una lista di bottoni), un pannello laterale contenente i possibili oggetti posizionabili
+		all'interno della piantina, un centro pagina che conterrà la piantina con zoom e quanto altro e magari una barra destra più little dove mettere le noitifiche.
+	 Gli oggetti inseribili nella piantina sono:
+	 	"Arduini" (marker)	-> generale, luce, serranda...
+	 -->
+
+<body id="body" onload="onLoad();" onkeydown="onKeyDown(event);" style="cursor: none">
+	
+	
+	<!-- Google loader -->
+	<div id="loader" class="loader">
+		<div id="load1" class="loading-bar"></div>
+		<div id="load2" class="loading-bar"></div>
+		<div id="load3" class="loading-bar"></div>
+		<div id="load4" class="loading-bar"></div>
+	</div>
+	
+	
+	
+	<div id="page_disabler" onclick="onHideSettings()">
+	</div>
+	
+	<div id="settings-div">
+
+		<img src="./resources/imgs/icons/close_black.svg" alt="Chiudi" class="close-button" onclick="onHideSettings()"></img>
+		
+		<div class="settings-option first-option">
+			<label class="switch">
+				<input id="gridSwitch" type="checkbox" onclick="toDrawGrid= !toDrawGrid; invalidated= true;"></input>
+				<div class="slider"></div>
+			</label>
+			<label class="option-description">Mostra griglia></label>
+		</div>
+
+
+		<div class="settings-option">
+			<label class="switch">
+				<input id="sidebarSwitch" type="checkbox" onclick="onSidebarEnablerTogglerClick();"></input>
+				<div class="slider"></div>
+			</label>
+			<label class="option-description">Disabilita barra laterale al passaggio del mouse</label>
+		</div>
+		
+		
+		<div class="settings-option last-option">
+			<label class="switch">
+				<input id="animationSwitch" type="checkbox" onclick="seeStartAnimation= !seeStartAnimation"></input>
+				<div class="slider"></div>
+			</label>
+			<label class="option-description">Mostra animazione all'avvio</label>
+		</div>
+		
+		
+		
+		<div class="divider"></div>
+		
+		<div class="info-div">
+			<h2>INFO</h2>
+			<span>Questa applicazione web è stata realizzata per poter disegnare la piantina della propria casa.</span>
+			<br></br>
+			<span class="little-info">Tramite i pulsanti in alto è possibile creare una uova piantina, salvare la piantina corrente indicandone il nome oppure caricarne una precedentemente salvata.</span>
+			<span class="little-info">È possibile inoltre visualizzare interamente la piantina al livello massimo di zoom, aumentare lo zoom e ridurre lo zoom sulla piantina.</span>
+			<span class="little-info">I restanti pulsanti servono per effettuare operazioni sugli oggetti selezionati inseriti nella piantina.</span>
+			<br></br>
+			<span class="little-info">Gli oggetti che si possono inserire si trovano nella barra laterale sinistra, attivabile passando con il mouse nella parte sinistra dello schermo o cliccando
+										sull'icona del menù in alto a destra, e trascinandoli all'interno della piantina.</span>
+			<br></br>
+			<span class="little-info">Una casella delimitata dalle linee continue, corrisponde ad un metro.</span>
+			<br></br>
+			<br></br>
+			<span>Applicazione realizzata da Luca Di Mauro per l'esame di Programmazione di Interfacce.</span>
+		</div>
+		
+	</div>
+	
+	
+	<div id="goodSnackbar" class="snackbar">
+		Operazione eseguita con successo!
+	</div>
+	
+	<div id="badSnackbar" class="snackbar">
+		Operazione fallita! Riprova nuovamente.
+	</div>
+	
+	
+	
+	
+	
+	<!-- LOGO INZIALE DELL?APPLICAZIONE -->
+	<div id="logo1" class="logo">Home</div>
+	<div id="logo2" class="logo">Sweet</div>
+	<div id="logo3" class="logo">Home</div>
+	
+	
+	
+	
+	
+	
+	<!-- CONTENITORE GLOBALE DELLA PAGINA -->
+	
+	
+	
+	<div id="wrapper" style="opacity: 0">
+
+		<div id="dropdown-content" class="dropdown-content">
+			<div id="planSizeDiv" class="dropdown-content-input-div">
+				<input id="widthInput" placeholder="Larghezza (metri)" type="number" class="dropdown-content-textfield"></input>
+				<input id="heightInput" placeholder="Altezza (metri)" type="number" class="dropdown-content-textfield" style="float: right;"></input>
+			</div> 
+			<div id="nameFileDiv" class="dropdown-content-input-div disabled">
+				<input id="nameFileInput" placeholder="Nome del file" type="text" class="dropddown-content-textfield" style="width:90%;"></input>
+			</div>
+			
+			
+			<div class="dropdown-content-buttons-div">
+				<div id="ok" class="dropdown-content-button" style="float:left" onclick="applyActionOnPlan()">
+					<img src="./resources/imgs/icons/apply_black.svg" alt="Ok"></input>
+				</div>
+				
+				<div id="back" class="dropdown-content-button" style="float: right;" onclick="onBackNewPlan()">
+					<img  src="./resources/imgs/icons/close_black.svg" alt="Back"></input>
+				</div>
+			</div>
+		</div>
+		
+		
+		<div id="sidebar_enabler" onmouseover="onSidebarEnablerMouseOver(event); hideDropdown()"></div>
+
+
+
+
+
+		<!-- Intestazione del sito -->
+		<div id="header" onmouseenter="hideSidebar()">
+			<div id="menuWrapper">
+
+
+				<!-- <button id="leftSidebarButton" class="menuItem enabledMenuItem leftBorderItem rightBorderItem" onclick="onLeftSidebarButtonClick();">
+					<img id="menuIcon" src="./resources/imgs/icons/menu_white.svg" alt="Show plan components" class="itemContent" />
+				</button> -->
+
+
+				<div id="hamburger-menu" class="ham-container enabledMenuItem leftBorderItem rightBorderItem menuItem disabled" onclick="onLeftSidebarButtonClick(); hideDropdown()">
+					<span class="ham-l1"></span>
+					<span class="ham-l2"></span>
+					<span class="ham-l3"></span>
+					<span class="ham-l4"></span>
+				</div>
+				
+				
+				
+				<!-- _____@@@@@_____@@@@@_____ -->
+				<!-- _____@@@@@_____@@@@@_____ -->
+				
+				
+				
+				<button id="newPlan" class="menuItem enabledMenuItem leftBorderItem tooltip">
+					<img src="./resources/imgs/icons/new_white.svg" alt="Create new plan" class="itemContent"></img>
+					<span class="tooltiptext abs-pos">Crea una nuova piantina</span>
+				</button>
+				
+				<button id="savePlan" class="menuItem enabledMenuItem tooltip">
+					<img src="./resources/imgs/icons/save_white.svg" alt="Save plan" class="itemContent"></img>
+					<span class="tooltiptext abs-pos">Salva la piantina corrente (CTRL+S)</span> 
+				</button>
+				
+				<button id="loadPlan" class="menuItem enabledMenuItem rightBorderItem tooltip">
+					<img src="./resources/imgs/icons/folder_open_white.svg" alt="Load plan" class="itemContent"></img>
+					<span class="tooltiptext abs-pos">Apri una piantina salvata precedentemente (CTRL+O)</span> 
+				</button>
+				
+				
+				
+				<!-- _____@@@@@_____@@@@@_____ -->
+				<!-- _____@@@@@_____@@@@@_____ -->
+				
+				
+				
+				<button id="fullscreen" class="menuItem enabledMenuItem leftBorderItem tooltip" onclick="resetPlanView();">
+					<img src="./resources/imgs/icons/zoom_out_map_white.svg" alt="See all plan" class="itemContent"></img>
+					<span class="tooltiptext abs-pos">Piantina a tutto chermo</span>
+				</button>
+				
+				<button id="zoominplan" class="menuItem enabledMenuItem tooltip" onmousedown="onZoomInPlanMouseDown();" onmouseup="onZoomInPlanMouseUp();" onmouseout="onZoomInPlanMouseUp();">
+					<img src="./resources/imgs/icons/zoom_in_white.svg" alt="Zoom in" class="itemContent"></img>
+					<span class="tooltiptext abs-pos">Zoom in della piantina (CTRL +)</span>
+				</button>
+				
+				<button id="zoomoutplan" class="menuItem enabledMenuItem rightBorderItem tooltip" onmousedown="onZoomOutPlanMouseDown();" onmouseup="onZoomOutPlanMouseUp();" onmouseout="onZoomOutPlanMouseUp();">
+					<img src="./resources/imgs/icons/zoom_out_white.svg" alt="Zoom out" class="itemContent"></img>
+					<span class="tooltiptext abs-pos">Zoom out della piantina (CTRL -)</span>
+				</button>
+				
+				
+				
+				<!-- _____@@@@@_____@@@@@_____ -->
+				<!-- _____@@@@@_____@@@@@_____ -->
+				
+				
+				
+				
+				<button id="delete" class="menuItem disabledMenuItem leftBorderItem tooltip" onclick="onDelete();">
+					<img src="./resources/imgs/icons/delete_grey.svg" alt="Delete selected component" class="itemContent"></img>
+					<span class="tooltiptext abs-pos">Elimina l'oggetto selezionato (DEL)</span> 
+				</button>
+				
+				<button id="cut" class="menuItem disabledMenuItem tooltip" onclick="onCut();">
+					<img src="./resources/imgs/icons/content_cut_grey.svg" alt="Cut selected component" class="itemContent"></img>
+					<span class="tooltiptext abs-pos">Taglia (CTRL + X)</span> 
+				</button>
+				
+				<button id="copy" class="menuItem disabledMenuItem tooltip" onclick="onCopy();">
+					<img src="./resources/imgs/icons/content_copy_grey.svg" alt="Copy selected component" class="itemContent"></img>
+					<span class="tooltiptext abs-pos">Copia (CTRL + C)</span> 
+				</button>
+				
+				<button id="paste" class="menuItem disabledMenuItem rightBorderItem tooltip" onclick="onPaste();">
+					<img src="./resources/imgs/icons/content_paste_grey.svg" alt="Paste component" class="itemContent"></img>
+					<span class="tooltiptext abs-pos">Incolla (CTRL + V)</span>
+				</button>
+				
+				
+				
+				<!-- _____@@@@@_____@@@@@_____ -->
+				<!-- _____@@@@@_____@@@@@_____ -->
+				
+				
+				
+				
+				<button id="zoomincomp" class="menuItem disabledMenuItem leftBorderItem tooltip"
+				onmousedown="onZoomInComponentMouseDown();" onmouseup="onZoomInComponentMouseUp();" onmouseout="onZoomInComponentMouseUp();">
+					<img src="./resources/imgs/icons/zoom_in_grey.svg" alt="Zoom in component" class="itemContent"></img>
+					<span class="tooltiptext abs-pos">Zoom in dell'oggetto</span>
+				</button>
+				
+				<button id="zoomoutcomp" class="menuItem disabledMenuItem tooltip"
+				onmousedown="onZoomOutComponentMouseDown(); invalidated= true;" onmouseup="onZoomOutComponentMouseUp();" onmouseout="onZoomOutComponentMouseUp();">
+					<img src="./resources/imgs/icons/zoom_out_grey.svg" alt="Zoom out component" class="itemContent"></img>
+					<span class="tooltiptext abs-pos">Zoom out dell'oggetto</span>
+				</button>
+				
+				<button id="rotaterightcomp" class="menuItem disabledMenuItem tooltip"
+				onmousedown="onRightRotateComponentMouseDown();" onmouseup="onRightRotateComponentMouseUp();" onmouseout="onRightRotateComponentMouseUp();">
+					<img src="./resources/imgs/icons/rotate_right_grey.svg" alt="Rotate right component" class="itemContent"></img>
+					<span class="tooltiptext abs-pos">Ruota l'oggetto verso destra</span>
+				</button>
+				
+				<button id="rotateleftcomp" class="menuItem disabledMenuItem tooltip"
+				onmousedown="onLeftRotateComponentMouseDown()" onmouseup="onLeftRotateComponentMouseUp();" onmouseout="onLeftRotateComponentMouseUp();"> 
+					<img src="./resources/imgs/icons/rotate_left_grey.svg" alt="Rotate left component" class="itemContent"></img>
+					<span class="tooltiptext abs-pos">Ruota l'oggetto verso sinistra</span>
+				</button>
+				
+				<button id="rotateright45comp" class="menuItem disabledMenuItem tooltip"
+				onmousedown="onRight45RotateComponentMouseDown();" onmouseup="onRight45RotateComponentMouseUp();" onmouseout="onRight45RotateComponentMouseUp();">
+					<img src="./resources/imgs/icons/rotate_right_45_grey.svg" alt="Rotate right component" class="itemContent"></img>
+					<span class="tooltiptext abs-pos">Ruota l'oggetto di 45° verso destra</span>
+				</button>
+				
+				<button id="rotateleft45comp" class="menuItem disabledMenuItem rightBorderItem tooltip"
+				onmousedown="onLeft45RotateComponentMouseDown()" onmouseup="onLeft45RotateComponentMouseUp();" onmouseout="onLeft45RotateComponentMouseUp();"> 
+					<img src="./resources/imgs/icons/rotate_left_45_grey.svg" alt="Rotate left component" class="itemContent"></img>
+					<span class="tooltiptext abs-pos">Ruota l'oggetto di 45 gradi verso sinistra</span>
+				</button>
+				
+				
+				
+				
+				
+				<!-- _____@@@@@_____@@@@@_____ -->
+				<!-- _____@@@@@_____@@@@@_____ -->
+				
+				
+				
+				<button class="menuItem enabledMenuItem leftBorderItem rightBorderItem tooltip" style="float: right;" onclick="onShowSettings(); hideDropdown(); hideSidebar();">
+					<img src="./resources/imgs/icons/settings_white.svg" alt="Show settings" class="itemContent"></img>
+					<span class="tooltiptext abs-pos" style="margin-left:-60px">Apri le impostazioni</span>
+				</button>
+				
+				
+				
+				<!-- _____@@@@@_____@@@@@_____ -->
+				<!-- _____@@@@@_____@@@@@_____ -->
+				
+				
+				
+				<div class="menuItem " style="display:none;">
+					<a class="itemContent" style="font-weight:bold;" id="scaleLevel">Scale level: 1</a>
+				</div>
+			</div>
+		</div>
+		
+		
+		
+		
+		
+		
+		
+		
+<!-- _____@@@@@_____@@@@@_____ --><!-- _____@@@@@_____@@@@@_____ -->
+<!-- _____@@@@@_____@@@@@_____ --><!-- _____@@@@@_____@@@@@_____ -->
+
+
+
+
+
+
+
+
+		<!-- Contenitore del corpo centrale del sito, ovvero la barra laterale sinistra, il contenuto centrale e la barra laterale destra -->
+		<div id="client-wrapper">
+
+			<!-- Barra sinistra. Le icone che rappresentano il mobili hanno l'id ugale al nome del file senza ".svg" -->
+			<div id="left_sidebar" style="overflow: hidden;">
+				
+				<div style="width: 100%; height: 100%">
+			
+					<div class="accordionButton" style="padding-top: 22%">
+						<img src="./resources/imgs/icons/expand_more_white.svg" alt=""></img>
+						<h5>Muri</h5>
+					</div>
+					<div class="accordionPanel" style="display: flex; align-items: center">
+						<ul>
+							<li class="accordionPanelItem">
+								<img id="wallImg" src="./resources/imgs/icons/wall_black.svg" class="accordionPanelItem-Wall" alt="Draw a wall" onclick="onDrawWallClicked();" style="display: inline; vertical-align: middle"></img>
+								<img src="./resources/imgs/icons/remove_black.svg" alt="Decrease wall size" class="wallSizeIncDecButtons"
+									 onmousedown="onWallSizeDecrMouseDown(event)" onmouseup="onWallSizeDecrMouseUp(event)" onmouseout="onWallSizeDecrMouseUp(event)"></img>
+								<input id="wallSize" style="width: 50px; display: inline; vertical-align: middle;"
+								       onwheel="onWallSizeMouseWheel(event)"></input>
+								<img src="./resources/imgs/icons/add_black.svg" alt="Increase wall size" class="wallSizeIncDecButtons"
+									 onmousedown="onWallSizeIncrMouseDown(event)" onmouseup="onWallSizeIncrMouseUp(event)" onmouseout="onWallSizeIncrMouseUp(event)"></img>
+							</li>
+						</ul>
+					</div>
+				
+					
+					<div class="accordionButton">
+						<img src="./resources/imgs/icons/expand_more_white.svg" alt=""></img>
+						<h5>Infissi</h5>
+					</div>
+					<div class="accordionPanel">
+						<ul>
+							<li class="accordionPanelItem tooltip">
+								<img src="./resources/imgs/icons/stairs_1.svg" class="accordionPanelItem-Forn" alt="Scale v1" id="stairs_1" draggable="true" ondragstart="onDragStart(event)"></img>
+								<span class="tooltiptext">Scale 1</span>
+							</li>
+							
+							<li class="accordionPanelItem tooltip">
+								<img src="./resources/imgs/icons/stairs_2.svg" class="accordionPanelItem-Forn" alt="Scale v2" id="stairs_2" draggable="true" ondragstart="onDragStart(event)"></img>
+								<span class="tooltiptext">Scale 2</span>
+							</li>
+							
+							<li class="accordionPanelItem tooltip">
+								<img src="./resources/imgs/icons/door_1.svg" class="accordionPanelItem-Forn" alt="Porta v1" id="door_1" draggable="true" ondragstart="onDragStart(event)"></img>
+								<span class="tooltiptext">Porta ad una anta 1</span>
+							</li>
+							
+							<li class="accordionPanelItem tooltip">
+								<img src="./resources/imgs/icons/door_2.svg" class="accordionPanelItem-Forn" alt="Porta v2" id="door_2" draggable="true" ondragstart="onDragStart(event)"></img>
+								<span class="tooltiptext">Porta ad una anta 2</span>
+							</li>
+							
+							<li class="accordionPanelItem tooltip">
+								<img src="./resources/imgs/icons/door_3.svg" class="accordionPanelItem-Forn" alt="Porta v3" id="door_3" draggable="true" ondragstart="onDragStart(event)"></img>
+								<span class="tooltiptext">Porta a due ante</span>
+							</li>
+							
+							<li class="accordionPanelItem tooltip">
+								<img src="./resources/imgs/icons/door_4.svg" class="accordionPanelItem-Forn" alt="Porta v4" id="door_4" draggable="true" ondragstart="onDragStart(event)"></img>
+								<span class="tooltiptext">Porta scorevole</span>
+							</li>
+							
+							<li class="accordionPanelItem tooltip">
+								<img src="./resources/imgs/icons/window_1.svg" class="accordionPanelItem-Forn" alt="Finestra v1" id="window_1" draggable="true" ondragstart="onDragStart(event)"></img>
+								<span class="tooltiptext">Finestra doppia</span>
+							</li>
+							
+							<li class="accordionPanelItem tooltip">
+								<img src="./resources/imgs/icons/window_2.svg" class="accordionPanelItem-Forn" alt="Finestra v2" id="window_2" draggable="true" ondragstart="onDragStart(event)"></img>
+								<span class="tooltiptext">Finestra singola</span>
+							</li>
+						</ul>
+					</div> <!-- Acccordion Panel -->
+					
+					
+					<!-- Robe della cucina -->
+					<div class="accordionButton">
+						<img src="./resources/imgs/icons/expand_more_white.svg" alt=""></img>
+						<h5>Cucina</h5>
+					</div>
+					<div class="accordionPanel">
+						<ul>
+							<li class="accordionPanelItem tooltip">
+								<img src="./resources/imgs/icons/fridge.svg" class="accordionPanelItem-Forn" alt="Frigorifero" id="fridge" draggable="true" ondragstart="onDragStart(event)"></img>
+								<span class="tooltiptext">Frigorifero</span>
+							</li>
+							
+							<li class="accordionPanelItem tooltip">
+								<img src="./resources/imgs/icons/cookers.svg" class="accordionPanelItem-Forn" alt="Fornelli" id="cookers" draggable="true" ondragstart="onDragStart(event)"></img>
+								<span class="tooltiptext">Fornelli</span>
+							</li>
+							
+							<li class="accordionPanelItem tooltip">
+								<img src="./resources/imgs/icons/sink_1.svg" class="accordionPanelItem-Forn" alt="Acquaio v1" id="sink_1" draggable="true" ondragstart="onDragStart(event)"></img>
+								<span class="tooltiptext">Acquaio 1</span>
+							</li>
+							
+							<li class="accordionPanelItem tooltip">
+								<img src="./resources/imgs/icons/sink_2.svg" class="accordionPanelItem-Forn" alt="Acquaio v2" id="sink_2" draggable="true" ondragstart="onDragStart(event)"></img>
+								<span class="tooltiptext">Acquaio 2</span>
+							</li>
+						</ul>
+					</div>
+					
+					<!-- Robe della sala -->
+					<div class="accordionButton">
+						<img src="./resources/imgs/icons/expand_more_white.svg" alt=""></img>
+						<h5>Sala</h5>
+					</div>
+					<div class="accordionPanel">
+						<ul>
+							<li class="accordionPanelItem tooltip">
+								<img src="./resources/imgs/icons/TV_1.svg" class="accordionPanelItem-Forn" alt="Televisione v1" id="TV_1" draggable="true" ondragstart="onDragStart(event)"></img>
+								<span class="tooltiptext">Televisione 1</span>
+							</li>
+							
+							<li class="accordionPanelItem tooltip">
+								<img src="./resources/imgs/icons/TV_2.svg" class="accordionPanelItem-Forn" alt="Televisione v2" id="TV_2" draggable="true" ondragstart="onDragStart(event)"></img>
+								<span class="tooltiptext">Televisione 2</span>
+							</li>
+							
+							<li class="accordionPanelItem tooltip">
+								<img src="./resources/imgs/icons/table_1.svg" class="accordionPanelItem-Forn" alt="Tavolo v1" id="table_1" draggable="true" ondragstart="onDragStart(event)"></img>
+								<span class="tooltiptext">Tavolo 1</span>
+							</li>
+							
+							<li class="accordionPanelItem tooltip">
+								<img src="./resources/imgs/icons/table_2.svg" class="accordionPanelItem-Forn" alt="Tavolo v2" id="table_2" draggable="true" ondragstart="onDragStart(event)"></img>
+								<span class="tooltiptext">Tavolo 2</span>
+							</li>
+							
+							<li class="accordionPanelItem tooltip">
+								<img src="./resources/imgs/icons/sofa.svg" class="accordionPanelItem-Forn" alt="Divano" id="sofa" draggable="true" ondragstart="onDragStart(event)"></img>
+								<span class="tooltiptext">Divano</span>
+							</li>
+							
+							<li class="accordionPanelItem tooltip">
+								<img src="./resources/imgs/icons/armchair.svg" class="accordionPanelItem-Forn" alt="Poltrona" id="armchair" draggable="true" ondragstart="onDragStart(event)"></img>
+								<span class="tooltiptext">Poltrona</span>
+							</li>
+						</ul>
+					</div>
+					
+					<!-- Roba del bagno -->
+					<div class="accordionButton">
+						<img src="./resources/imgs/icons/expand_more_white.svg" alt=""></img>
+						<h5>Bagno</h5>
+					</div>
+					<div class="accordionPanel">
+						<ul>
+							<li class="accordionPanelItem tooltip">
+								<img src="./resources/imgs/icons/wc.svg" class="accordionPanelItem-Forn" alt="Cesso" id="wc" draggable="true" ondragstart="onDragStart(event)"></img>
+								<span class="tooltiptext">WC</span>
+							</li>
+							
+							<li class="accordionPanelItem tooltip">
+								<img src="./resources/imgs/icons/bidet.svg" class="accordionPanelItem-Forn" alt="Bidet" id="bidet" draggable="true" ondragstart="onDragStart(event)"></img>
+								<span class="tooltiptext">Bidet</span>
+							</li>
+							
+							<li class="accordionPanelItem tooltip">
+								<img src="./resources/imgs/icons/sink_3.svg" class="accordionPanelItem-Forn" alt="Lavandino" id="sink_3" draggable="true" ondragstart="onDragStart(event)"></img>
+								<span class="tooltiptext">Lavandino</span>
+							</li>
+							
+							<li class="accordionPanelItem tooltip">
+								<img src="./resources/imgs/icons/bathtub.svg" class="accordionPanelItem-Forn" alt="Vasca da bagno" id="bathtub" draggable="true" ondragstart="onDragStart(event)"></img>
+								<span class="tooltiptext">Vasca da bagno</span>
+							</li>
+							
+							<li class="accordionPanelItem tooltip">
+								<img src="./resources/imgs/icons/shower.svg" class="accordionPanelItem-Forn" alt="Doccia" id="shower" draggable="true" ondragstart="onDragStart(event)"></img>
+								<span class="tooltiptext">Doccia</span>
+							</li>
+						</ul>
+					</div>
+					
+					<!-- Roba della camera -->
+					<div class="accordionButton">
+						<img src="./resources/imgs/icons/expand_more_white.svg" alt=""></img>
+						<h5>Camera</h5>
+					</div>
+					<div class="accordionPanel">
+						<ul>
+							<li class="accordionPanelItem tooltip">
+								<img src="./resources/imgs/icons/bed_1.svg" class="accordionPanelItem-Forn" alt="Letto v1" id="bed_1" draggable="true" ondragstart="onDragStart(event)"></img>
+								<span class="tooltiptext">Letto matrimoniale</span>
+							</li>
+							
+							<li class="accordionPanelItem tooltip">
+								<img src="./resources/imgs/icons/bed_2.svg" class="accordionPanelItem-Forn" alt="Letto v2" id="bed_2" draggable="true" ondragstart="onDragStart(event)"></img>
+								<span class="tooltiptext">Letto singolo</span>
+							</li>
+							
+							<li class="accordionPanelItem tooltip">
+								<img src="./resources/imgs/icons/bedside_table.svg" class="accordionPanelItem-Forn" alt="Comodino" id="bedside_table" draggable="true" ondragstart="onDragStart(event)"></img>
+								<span class="tooltiptext">Comodino</span>
+							</li>
+							
+							<li class="accordionPanelItem tooltip">
+								<img src="./resources/imgs/icons/wardrobe.svg" class="accordionPanelItem-Forn" alt="Armadio" id="wardrobe" draggable="true" ondragstart="onDragStart(event)"></img>
+								<span class="tooltiptext">Armadio</span>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		
+		
+		
+		
+		
+		
+		
+		
+<!-- _____@@@@@_____@@@@@_____ --><!-- _____@@@@@_____@@@@@_____ -->
+<!-- _____@@@@@_____@@@@@_____ --><!-- _____@@@@@_____@@@@@_____ -->
+
+
+
+
+
+
+
+
+			<!-- Contenuto centrale (piantina) -->
+			<div id="planContainer" onmouseenter="hideDropdown()">
+				<canvas id="mainCanvas" ondragenter="onDragEnter(event);" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)"
+					onmousedown="onMainCanvasMouseDown(event)" onmouseup="onMainCanvasMouseUp(event)" onmousemove="onMainCanvasMouseMove(event)" onmouseout="onMainCanvasMouseOut(event)"
+					onmouseover="onMainCanvasMouseOver(event)" onwheel="onMainCanvasMouseWheel(event)"></canvas>
+				<canvas id="gridCanvas" style="display:none"></canvas>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

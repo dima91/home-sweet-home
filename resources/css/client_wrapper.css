@@ -1,0 +1,17 @@
+@CHARSET "UTF-8";
+
+
+
+/* ***** ***** ***** */
+/* Parte restante della finestra al di sotto dell'intestazione contenente le barre laterali e il contenuto centrale (la piantina) */
+/* ***** ***** ***** */
+#client-wrapper {
+	background-color: var(--main-bg-color);
+	left: 0px;
+	bottom: 0px;
+	right: 0px;
+	position: absolute;
+	
+	height: 100%;
+	z-index: 5;
+}
